@@ -9,6 +9,9 @@ export class Product {
   @Column()
   name: string;
 
+  @Column()
+  classe: string;
+
   @OneToMany(() => Emplacement, (emplacement) => emplacement.product)
   emplacements: Emplacement[];
 }

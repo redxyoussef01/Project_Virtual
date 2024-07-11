@@ -1,13 +1,13 @@
 import { Product } from "./entity/product";
 import { Emplacement } from "./entity/emplacement";
 import { Not } from "typeorm";
-module.exports = function (app, AppDataSource, io) {
+module.exports = function (app, AppDataSource) {
   app.post("/products", async (req, res) => {
     try {
       const productRepository = AppDataSource.getRepository(Product);
-
       const prodt = new Product();
       prodt.name = req.body.name;
+      prodt.classe = req.body.classe;
       const result = await productRepository.save(prodt);
       return res.status(201).json(result);
     } catch (error) {
@@ -49,6 +49,7 @@ module.exports = function (app, AppDataSource, io) {
         return res.status(404).json({ error: "Product not found" });
       }
       product.name = req.body.name;
+      product.classe = req.body.classe;
       const result = await productRepository.save(product);
       return res.status(200).json(result);
     } catch (error) {
@@ -72,37 +73,7 @@ module.exports = function (app, AppDataSource, io) {
     }
   });
 
-  app.post("/emplacements", async (req, res) => {
-    try {
-      const emplacementRepository = AppDataSource.getRepository(Emplacement);
-
-      const { x, y, z, name, qte, productId } = req.body;
-
-      // Assuming productId is sent in the request body to associate with a Product
-      const product = await AppDataSource.manager.findOne(Product, {
-        where: { id: productId },
-      });
-      if (!product) {
-        return res.status(404).json({ error: "Product not found" });
-      }
-
-      const emplacement = new Emplacement();
-      emplacement.x = x;
-      emplacement.y = y;
-      emplacement.z = z;
-      emplacement.name = name;
-      emplacement.qte = qte;
-      emplacement.product = product;
-
-      const result = await emplacementRepository.save(emplacement);
-      return res.status(201).json(result);
-    } catch (error) {
-      console.error("Error creating emplacement:", error);
-      res.status(500).json({ error: "Internal server error" });
-    }
-  });
-
-  app.get("/emplacements", async (req, res) => {
+  app.get("/emplacements0", async (req, res) => {
     try {
       const emplacementRepository = AppDataSource.getRepository(Emplacement);
       const emplacements = await emplacementRepository.find({
@@ -117,11 +88,23 @@ module.exports = function (app, AppDataSource, io) {
       res.status(500).json({ error: "Internal server error" });
     }
   });
+  app.get("/emplacements", async (req, res) => {
+    try {
+      const emplacementRepository = AppDataSource.getRepository(Emplacement);
+      const emplacements = await emplacementRepository.find({
+        relations: ["product"],
+      });
+      return res.status(200).json(emplacements);
+    } catch (error) {
+      console.error("Error fetching emplacements:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
 
   app.get("/emplacements/:id", async (req, res) => {
     try {
-      const emplacementRepository = AppDataSource.getRepository(Emplacement);
-      const emplacement = await emplacementRepository.findOne(req.params.id, {
+      const emplacement = await AppDataSource.manager.findOne(Emplacement, {
+        where: { id: req.params.id },
         relations: ["product"],
       });
       if (!emplacement) {
@@ -148,9 +131,13 @@ module.exports = function (app, AppDataSource, io) {
       }
 
       // Update fields
+      if (name) {
+        emplacement.name = name;
+      }
 
-      emplacement.name = name;
-      emplacement.qte = qte;
+      if (qte) {
+        emplacement.qte = qte;
+      }
 
       // Update associated product if productId is provided
       if (productId) {
@@ -167,21 +154,6 @@ module.exports = function (app, AppDataSource, io) {
       return res.status(200).json(result);
     } catch (error) {
       console.error("Error updating emplacement:", error);
-      res.status(500).json({ error: "Internal server error" });
-    }
-  });
-
-  app.delete("/emplacements/:id", async (req, res) => {
-    try {
-      const emplacementRepository = AppDataSource.getRepository(Emplacement);
-      const emplacement = await emplacementRepository.findOne(req.params.id);
-      if (!emplacement) {
-        return res.status(404).json({ error: "Emplacement not found" });
-      }
-      await emplacementRepository.remove(emplacement);
-      return res.status(204).send();
-    } catch (error) {
-      console.error("Error deleting emplacement:", error);
       res.status(500).json({ error: "Internal server error" });
     }
   });

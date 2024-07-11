@@ -33,3 +33,43 @@ export const getDataSource = (delay = 3000): Promise<DataSource> => {
     }, delay);
   });
 };
+
+/*
+async function saveEmplacements() {
+  try {
+    await AppDataSource.initialize();
+    const emplacementRepository = AppDataSource.getRepository(Emplacement);
+
+    for (
+      let m = -10.5, charCode = 65;
+      m < 27 && charCode <= 74;
+      m += 4, charCode++
+    ) {
+      // 74 is the ASCII code for 'J'
+      for (let n = 0; n < 2; n++) {
+        for (let i = -1; i < 8; i++) {
+          for (let j = -6; j < 7; j++) {
+            const emplacement = new Emplacement();
+            emplacement.x = m + n;
+            emplacement.y = i;
+            emplacement.z = j;
+            emplacement.name = `${String.fromCharCode(charCode)}${i + 1}${
+              j + 1
+            }`;
+
+            await emplacementRepository.save(emplacement);
+          }
+        }
+      }
+    }
+
+    await AppDataSource.destroy();
+    console.log("Emplacements saved successfully!");
+  } catch (error) {
+    console.error("Error saving emplacements:", error);
+  }
+}
+
+saveEmplacements();
+
+*/
