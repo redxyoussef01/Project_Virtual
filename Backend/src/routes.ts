@@ -157,4 +157,9 @@ module.exports = function (app, AppDataSource) {
       res.status(500).json({ error: "Internal server error" });
     }
   });
+
+  // Add health check endpoint
+  app.get("/health", (req, res) => {
+    res.status(200).json({ status: "healthy" });
+  });
 };
